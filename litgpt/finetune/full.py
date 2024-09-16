@@ -10,7 +10,12 @@ import warnings
 
 import lightning as L
 import torch
+
 from lightning.fabric.strategies import FSDPStrategy
+# from lightning.fabric.strategies import ModelParallelStrategy
+from lightning.pytorch.strategies import DeepSpeedStrategy
+import deepspeed
+
 from torch.utils.data import DataLoader, ConcatDataset
 from torchmetrics import RunningMean
 
@@ -97,13 +102,31 @@ def setup(
     )
 
     if devices * num_nodes > 1:
-        strategy = FSDPStrategy(
-            auto_wrap_policy={Block},
-            activation_checkpointing_policy={Block},
-            state_dict_type="full",
-            limit_all_gathers=True,
-            cpu_offload=False,
-        )
+        # strategy = FSDPStrategy(
+        #     auto_wrap_policy={Block},
+        #     activation_checkpointing_policy={Block},
+        #     state_dict_type="full",
+        #     limit_all_gathers=True,
+        #     cpu_offload=False,
+        # )
+
+        # strategy = ModelParallelStrategy(
+        #     parallelize_fn=parallelize_feedforward,
+        #     data_parallel_size=2,
+        #     tensor_parallel_size=2,
+
+        #     auto_wrap_policy={Block},
+        #     activation_checkpointing_policy={Block},
+        #     state_dict_type="full",
+        #     limit_all_gathers=True,
+        #     cpu_offload=False,
+        # )
+
+        strategy=DeepSpeedStrategy(
+            stage=3,
+            offload_optimizer=True,  # Enable CPU Offloading
+            cpu_checkpointing=True,  # (Optional) offload activations to CPU
+        ),
     else:
         strategy = "auto"
 
