@@ -12,8 +12,8 @@ import lightning as L
 import torch
 
 from lightning.fabric.strategies import FSDPStrategy
-# from lightning.fabric.strategies import ModelParallelStrategy
-from lightning.pytorch.strategies import DeepSpeedStrategy
+from lightning.fabric.strategies import ModelParallelStrategy
+# from lightning.pytorch.strategies import DeepSpeedStrategy
 # import deepspeed
 
 from torch.utils.data import DataLoader, ConcatDataset
@@ -110,14 +110,18 @@ def setup(
         #     cpu_offload=False,
         # )
 
-        # strategy = ModelParallelStrategy()
+        strategy = ModelParallelStrategy(
+            data_parallel_size="auto",
+            tensor_parallel_size="auto",
+        )
 
         # strategy = DeepSpeedStrategy(
         #     stage = 3,
         #     offload_optimizer = True,  # Enable CPU Offloading
         #     cpu_checkpointing = True,  # (Optional) offload activations to CPU
         # ),
-        strategy = "deepspeed"
+
+        # strategy = "deepspeed"
     else:
         strategy = "auto"
 
